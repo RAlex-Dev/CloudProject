@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.2-internal" fx:controller="pkg.Controller.Controller">
+<top>
+    <HBox style="-fx-background-color: white;">
+        <MenuBar>
+            <Menu text="File">
+            </Menu>
+            <Menu text="View">
+            </Menu>
+            <Menu text="Preferences">
+                <items>
+                    <MenuItem fx:id="backupOpt" onAction="#onBackupOpt" text="Auto Backup"></MenuItem>
+                </items>
+            </Menu>
+        </MenuBar>
+    </HBox>
+</top>
+    <left>
+            <TabPane style="-fx-border-color: darkgray;" prefWidth="500">
+                <tabs>
+                    <Tab fx:id="remoteTab" text="Cloud Explorer" closable="false">
+                        <TreeView>
+                        </TreeView>
+                    </Tab >
+                </tabs>
+            </TabPane>
+    </left>
+
+    <right>
+        <VBox style="-fx-border-color: darkgrey;">
+            <Button fx:id="downloadButton" onAction="#onDownloadButtonClicked" text="Download" />
+            <Button fx:id="uploadButton" onAction="#onUploadButtonClicked" text="Upload" />
+            <Button fx:id="refreshButton" onAction="#onRefreshButtonClicked" text="Refresh" />
+
+        </VBox>
+    </right>
+
+    <center>
+        <TabPane style="-fx-border-color: darkgray;" prefWidth="500">
+            <tabs>
+                <Tab fx:id="localTab" text="Local Explorer" closable="false">
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+
+    <bottom>
+        <VBox spacing="10" style="-fx-border-color: black;" GridPane.columnIndex="0" GridPane.rowIndex="2">
+            <ScrollPane fx:id="logPane">
+            </ScrollPane>
+            <FlowPane style="-fx-border-color: grey;">
+                <Label fx:id="programStatus" />
+            </FlowPane>
+        </VBox>
+    </bottom>
+</BorderPane>

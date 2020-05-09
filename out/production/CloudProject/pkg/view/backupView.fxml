@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane maxHeight="Infinity" maxWidth="Infinity" minHeight="-Infinity" minWidth="-Infinity"  xmlns="http://javafx.com/javafx/10.0.2-internal"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="pkg.Controller.BackUpController">
+
+
+    <ComboBox fx:id="hoursBox" layoutX="180.0" layoutY="20.0" prefWidth="70.0" promptText="Hrs">
+        <items>
+            <FXCollections fx:factory="observableArrayList">
+                <String fx:value="01" />
+                <String fx:value="02" />
+                <String fx:value="03" />
+                <String fx:value="04" />
+                <String fx:value="05" />
+                <String fx:value="06" />
+                <String fx:value="07" />
+                <String fx:value="08" />
+                <String fx:value="09" />
+                <String fx:value="10" />
+                <String fx:value="11" />
+                <String fx:value="12" />
+            </FXCollections>
+        </items>
+    </ComboBox>
+    <ComboBox fx:id="minutesBox" layoutX="260.0" layoutY="20.0" prefWidth="70.0" promptText="Mins">
+        <items>
+            <FXCollections fx:factory="observableArrayList">
+                <String fx:value="00" />
+                <String fx:value="01" />
+                <String fx:value="02" />
+                <String fx:value="03" />
+                <String fx:value="04" />
+                <String fx:value="05" />
+                <String fx:value="06" />
+                <String fx:value="07" />
+                <String fx:value="08" />
+                <String fx:value="09" />
+                <String fx:value="10" />
+                <String fx:value="11" />
+                <String fx:value="12" />
+                <String fx:value="13" />
+                <String fx:value="14" />
+                <String fx:value="15" />
+                <String fx:value="16" />
+                <String fx:value="17" />
+                <String fx:value="18" />
+                <String fx:value="19" />
+                <String fx:value="20" />
+                <String fx:value="21" />
+                <String fx:value="22" />
+                <String fx:value="23" />
+                <String fx:value="24" />
+                <String fx:value="25" />
+                <String fx:value="26" />
+                <String fx:value="27" />
+                <String fx:value="28" />
+                <String fx:value="29" />
+                <String fx:value="30" />
+                <String fx:value="31" />
+                <String fx:value="32" />
+                <String fx:value="33" />
+                <String fx:value="34" />
+                <String fx:value="35" />
+                <String fx:value="36" />
+                <String fx:value="37" />
+                <String fx:value="38" />
+                <String fx:value="39" />
+                <String fx:value="40" />
+                <String fx:value="41" />
+                <String fx:value="42" />
+                <String fx:value="43" />
+                <String fx:value="44" />
+                <String fx:value="45" />
+                <String fx:value="46" />
+                <String fx:value="47" />
+                <String fx:value="48" />
+                <String fx:value="49" />
+                <String fx:value="50" />
+                <String fx:value="51" />
+                <String fx:value="52" />
+                <String fx:value="53" />
+                <String fx:value="54" />
+                <String fx:value="55" />
+                <String fx:value="56" />
+                <String fx:value="57" />
+                <String fx:value="58" />
+                <String fx:value="59" />
+                <String fx:value="60" />
+            </FXCollections>
+        </items>
+    </ComboBox>
+    <ComboBox fx:id="timeOfDayBox" layoutX="340.0" layoutY="20.0" prefWidth="70.0"  value="AM">
+        <items>
+            <FXCollections fx:factory="observableArrayList">
+                <String fx:value="AM" />
+                <String fx:value="PM" />
+            </FXCollections>
+        </items>
+    </ComboBox>
+    <Button fx:id="browseBtn" onAction="#onBrowseButtonClicked" layoutX="420.0" layoutY="20.0" prefWidth="50.0" text="..." />
+    <Button fx:id="okBtn" onAction="#exit" layoutX="500.0" layoutY="20.0" prefWidth="70.0" text="Ok" />
+    <DatePicker fx:id="datePicker" layoutX="230.0" layoutY="70.0">
+    </DatePicker>
+
+
+    <TableView fx:id="backupTable" layoutX="20" layoutY="100">
+        <columns>
+            <TableColumn fx:id="dateTimeCol" prefWidth="270" text="Time" />
+            <TableColumn fx:id="dirCol" prefWidth="270" text="Directory" />
+        </columns>
+    </TableView>
+    <Button fx:id="addRow" onAction="#onAddClick" text="+" layoutX="570" layoutY="100"/>
+    <Button fx:id="removeRow" onAction="#onRemoveClick" text="-" layoutX="570" layoutY="130"/>
+</AnchorPane>
