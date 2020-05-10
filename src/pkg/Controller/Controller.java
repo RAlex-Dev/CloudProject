@@ -285,7 +285,7 @@ public class Controller {
 
         BackUpController backUpController = new BackUpController();
 
-        backUpController.start();
+        backUpController.start(prefs);
 
     }
 

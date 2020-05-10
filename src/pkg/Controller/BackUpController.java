@@ -18,6 +18,7 @@ import pkg.model.DateTime;
 import javax.swing.*;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.prefs.Preferences;
 
 public class BackUpController {
 
@@ -44,7 +45,7 @@ public class BackUpController {
     private ObservableList<DateTime> dateTimeList =
             FXCollections.observableArrayList();
 
-    public void start() {
+    public void start(Preferences prefs) {
 
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
