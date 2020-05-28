@@ -769,7 +769,7 @@ public class Controller {
         stage.show();
     }
 
-    // Generate a tray icon for Windows
+    // Generate a tray icon for Window OS
     public TrayIcon createTrayIcon(final Stage stage) {
         if (SystemTray.isSupported()) {
             SystemTray tray = SystemTray.getSystemTray();
