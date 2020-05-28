@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.Font?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.*?>
 <VBox xmlns:fx="http://javafx.com/fxml"
       xmlns="http://javafx.com/javafx"
       fx:controller="pkg.Controller.Controller">
@@ -18,6 +14,13 @@
         <Insets top="20" left="10" right="10" bottom="10"></Insets>
     </padding>
 
+    <Label text="Company name: ">
+        <font>
+            <Font name="Arial"/>
+        </font>
+    </Label>
+
+    <TextField fx:id="companyInput"/>
     <Label text="Username">
         <font>
             <Font name="Arial"/>

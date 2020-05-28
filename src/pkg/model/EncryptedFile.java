@@ -12,6 +12,7 @@ public class EncryptedFile extends File {
     private String saltString;
     private String fileName;
     private String filePath;
+    private String accessLevel;
 
     public EncryptedFile(String pathname) {
         super(pathname);
@@ -67,5 +68,13 @@ public class EncryptedFile extends File {
 
     public void setSaltString(byte[] salt) {
         saltString = Base64.encodeBase64String(salt);
+    }
+
+    public String getAccessLevel() {
+        return accessLevel;
+    }
+
+    public void setAccessLevel(String accessLevel) {
+        this.accessLevel = accessLevel;
     }
 }

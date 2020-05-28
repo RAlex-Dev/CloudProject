@@ -11,12 +11,20 @@
 <?import javafx.geometry.Insets?>
 <VBox xmlns:fx="http://javafx.com/fxml"
       xmlns="http://javafx.com/javafx"
-      fx:controller="pkg.Controller.Controller">
+      fx:controller="pkg.Controller.loginController">
 
     <spacing>5</spacing>
     <padding>
         <Insets top="20" left="10" right="10" bottom="10"></Insets>
     </padding>
+
+    <Label text="Company">
+        <font>
+            <Font name="Arial"/>
+        </font>
+    </Label>
+
+    <TextField fx:id="company"/>
 
     <Label text="Username">
         <font>
@@ -26,12 +34,13 @@
 
     <TextField fx:id="userInput"/>
 
+
     <Label text="Password">
         <font>
             <Font name="Arial"/>
         </font>
     </Label>
-    <TextField fx:id="passInput"/>
+    <PasswordField fx:id="passInput"/>
 
     <Label text="Code">
         <font>
@@ -46,7 +55,7 @@
         </padding>
         <spacing>10</spacing>
 
-        <Button fx:id="loginBtn" text="Login">
+        <Button fx:id="loginBtn" text="Login" onAction="#loginUser">
         </Button>
 
         <Button text="Create an account">

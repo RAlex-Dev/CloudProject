@@ -9,14 +9,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.TreeView;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import pkg.Controller.Controller;
+import jfxtras.styles.jmetro.JMetro;
+import jfxtras.styles.jmetro.Style;
+import pkg.Controller.loginController;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 
@@ -32,26 +33,25 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Controller controller = new Controller();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("view/view.fxml"));
+
+
+        loginController controller;
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("view/loginView.fxml"));
         Parent root = loader.load();
+
+        JMetro jMetro = new JMetro(Style.LIGHT);
+
         controller = loader.getController();
-        controller.initLog();
-        controller.initLocalFileTree();
-        controller.initDir();
-        controller.initRemoteFileTree();
-        //    controller.initBtns();
-        primaryStage.setTitle("CloudProto");
-        primaryStage.setScene(new Scene(root, 1200, 800));
+        primaryStage.setTitle("Login");
+        Scene scene = new Scene(root, 400, 280);
+        jMetro.setScene(scene);
+        primaryStage.setScene(scene);
         primaryStage.setResizable(false);
-        createTrayIcon(primaryStage);
-        firstTime = true;
-        Platform.setImplicitExit(false);
         primaryStage.show();
 
     }
 
-    public void createTrayIcon(final Stage stage) {
+    public TrayIcon createTrayIcon(final Stage stage) {
         if (SystemTray.isSupported()) {
             SystemTray tray = SystemTray.getSystemTray();
 
@@ -114,8 +114,8 @@ public class Main extends Application {
             } catch (AWTException e) {
                 System.err.println(e);
             }
-            // ...
         }
+        return trayIcon;
     }
 
     public void showProgramIsMinimizedMsg() {

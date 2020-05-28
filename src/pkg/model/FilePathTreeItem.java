@@ -3,11 +3,7 @@ package pkg.model;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeItem;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,22 +21,24 @@ public class FilePathTreeItem extends TreeItem<String> {
     private String fileName;
     private String fileId;
     private ContextMenu contextMenu = new ContextMenu();
+    private String accessLevel;
 
-    // Image image = new Image("File:folder.jpg");
-    // ImageView imageView = new ImageView(image);
+    // public static Image image = new Image("CloudProject/pkg/model/user.png");
+    //  ImageView imageView = new ImageView(image);
 
     public FilePathTreeItem(Path file) {
         // check call to super class
         super(file.toString());
         this.fullPath = file.toString();
+        this.setAccessLevel("BRONZE"); // default access level
 
         if (Files.isDirectory(file)) {
             this.isDirectory = true;
-            //     this.setGraphic(imageView);
+            //    this.setGraphic(imageView);
             // set the graphic a closed folder image
         } else {
             this.isDirectory = false;
-            // set the graphic for a file image
+            //   this.setGraphic(imageView);
         }
 
         if (!fullPath.endsWith(File.separator)) {
@@ -99,6 +97,7 @@ public class FilePathTreeItem extends TreeItem<String> {
         this.fullPath = file.toString();
         this.fileName = fileName;
         this.fileId = fileId;
+        this.setAccessLevel("BRONZE");
 
         // USE LATER FOR DIR UPLOAD
 
@@ -164,6 +163,14 @@ public class FilePathTreeItem extends TreeItem<String> {
 
     public String getFileName() {
         return fileName;
+    }
+
+    public String getAccessLevel() {
+        return accessLevel;
+    }
+
+    public void setAccessLevel(String accessLevel) {
+        this.accessLevel = accessLevel;
     }
 }
 

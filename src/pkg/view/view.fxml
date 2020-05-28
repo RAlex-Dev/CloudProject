@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.2-internal"
             fx:controller="pkg.Controller.Controller">
     <top>
-        <HBox style="-fx-background-color: white;">
+        <HBox>
             <MenuBar>
                 <Menu text="File">
                 </Menu>
@@ -21,29 +21,106 @@
         </HBox>
     </top>
     <left>
-        <TabPane style="-fx-border-color: darkgray;" prefWidth="500">
-            <tabs>
-                <Tab fx:id="remoteTab" text="Cloud Explorer" closable="false">
-                    <TreeView>
-                    </TreeView>
-                </Tab>
-            </tabs>
-        </TabPane>
+        <AnchorPane>
+            <children>
+                <TabPane style="-fx-border-color: darkgray;" prefWidth="500" AnchorPane.topAnchor="0.0"
+                         AnchorPane.rightAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.bottomAnchor="0.0">
+                    <tabs>
+                        <Tab fx:id="remoteTab" text="Cloud Explorer" closable="false">
+                            <graphic>
+                                <ImageView>
+                                    <image>
+                                        <Image url="@remote.png"></Image>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <TreeView>
+                            </TreeView>
+                        </Tab>
+                    </tabs>
+                </TabPane>
+                <HBox AnchorPane.topAnchor="1.0" AnchorPane.rightAnchor="5.0">
+                    <children>
+                        <Button onAction="#refreshRemoteTree">
+                            <graphic>
+                                <ImageView>
+                                    <image>
+                                        <Image url="@refresh.png"></Image>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                    </children>
+                </HBox>
+            </children>
+        </AnchorPane>
     </left>
 
     <right>
-        <VBox style="-fx-border-color: darkgrey;">
-            <Button fx:id="downloadButton" onAction="#onDownloadButtonClicked" text="Download"/>
-            <Button fx:id="uploadButton" onAction="#onUploadButtonClicked" text="Upload"/>
-            <Button fx:id="refreshButton" onAction="#onRefreshButtonClicked" text="Refresh"/>
+        <AnchorPane style="-fx-border-color: darkgray;">
+            <ImageView layoutX="10">
+                <image>
+                    <Image url="@user.png"></Image>
+                </image>
+            </ImageView>
 
-        </VBox>
+
+            <Label fx:id="userNameField" style="-fx-font-weight: bold" layoutX="9" layoutY="65"></Label>
+            <Label fx:id="status" style="-fx-font-weight: bold" layoutX="16" layoutY="80"></Label>
+
+            <Button fx:id="downloadButton" onAction="#onDownloadButtonClicked" style="-fx-border-color: darkgray;"
+                    layoutY="200">
+                <graphic>
+                    <ImageView>
+                        <image>
+                            <Image url="@download.png"></Image>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button fx:id="uploadBtn" onAction="#onUploadButtonClicked" style="-fx-border-color: darkgray;"
+                    layoutY="120">
+                <graphic>
+                    <ImageView>
+                        <image>
+                            <Image url="@upload.png"></Image>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button fx:id="fileToolBtn" onAction="#startSplitMerge" style="-fx-border-color: darkgray;" layoutY="280">
+                <graphic>
+                    <ImageView>
+                        <image>
+                            <Image url="@splitter.png"></Image>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button fx:id="fileEncrypterBtn" onAction="#onUploadButtonClicked" style="-fx-border-color: darkgray;"
+                    layoutY="360">
+                <graphic>
+                    <ImageView>
+                        <image>
+                            <Image url="@encrypt-decrypt.png"></Image>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+        </AnchorPane>
     </right>
 
     <center>
         <TabPane style="-fx-border-color: darkgray;" prefWidth="500">
             <tabs>
                 <Tab fx:id="localTab" text="Local Explorer" closable="false">
+                    <graphic>
+                        <ImageView>
+                            <image>
+                                <Image url="@local.png"></Image>
+                            </image>
+                        </ImageView>
+                    </graphic>
                 </Tab>
             </tabs>
         </TabPane>

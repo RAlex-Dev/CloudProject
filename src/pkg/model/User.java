@@ -9,12 +9,29 @@ public class User {
     private boolean isBronze;
     private boolean isSilver;
     private boolean isGold;
+    private String status;
 
     public User(String userName, String password, String code) {
         this.userName = userName;
         this.password = password;
         this.code = code;
-        this.credits = credits;
+        this.status = status;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getUserName() {
@@ -29,15 +46,11 @@ public class User {
         return code;
     }
 
-    public void setMemStat(long credits) {
-        if (credits >= 500) {
-            isBronze = true;
-        }
-        if (credits >= 1000) {
-            isSilver = true;
-        }
-        if (credits >= 1500) {
-            isGold = true;
-        }
+    public long getCredits() {
+        return credits;
+    }
+
+    public void setCredits(long credits) {
+        this.credits = credits;
     }
 }

@@ -1,30 +1,43 @@
 package pkg.Controller;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Side;
-import javafx.scene.control.*;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Popup;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import okhttp3.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import pkg.Constants;
+import pkg.Service.MineService;
+import pkg.Tools.EDTool;
 import pkg.model.EncryptedFile;
 import pkg.model.FilePathTreeItem;
 import pkg.model.User;
@@ -32,8 +45,13 @@ import pkg.model.User;
 import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.security.InvalidKeyException;
@@ -43,25 +61,21 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Timer;
 import java.util.*;
-import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 public class Controller {
 
-    private static String outDir = "\\\\Mac\\Home\\Desktop\\outDir\\";
-    private static String incDir = "\\\\Mac\\Home\\Desktop\\incDir";
     private static String strDir = "\\\\Mac\\Home\\Desktop";
+    boolean firstTime;
     @FXML
     private Tab localTab;
     @FXML
     private Tab remoteTab;
     @FXML
     private ScrollPane logPane;
-    @FXML
-    private Button downloadButton;
-    @FXML
-    private Button uploadButton;
     @FXML
     private TextField userInput;
     @FXML
@@ -73,28 +87,96 @@ public class Controller {
     @FXML
     private Button createBtn;
     @FXML
-    private MenuItem backupOpt;
+    private Button uploadBtn;
     @FXML
     private Button addSlot;
     @FXML
+    private ImageView refresh;
+    @FXML
     private Label programStatus;
+    @FXML
+    private Label userNameField;
+    @FXML
+    private Label status;
+    @FXML
+    private Label points;
+
+    private TrayIcon trayIcon;
+
+    private boolean isMultiOn = false;
+
     private TextArea logger;
     private char[] password = new char[]{'r', 'o', 's', 'h', 'a', 'n', '8', '9', '1', '2', '3', '4'};
-    private TreeView<String> treeView;
     private TreeItem<String> rootNode;
     private ArrayList<FilePathTreeItem> fileUploadList;
     private ArrayList<FilePathTreeItem> fileDownloadList;
     private SecureRandom secureRandom = new SecureRandom();
-    private String tempDir = "\\\\Mac\\Home\\Desktop\\encryptedFiles";
     private WebController webController;
-
+    private TreeView localTreeView;
+    private TreeView remoteTreeView;
     private boolean isDirCreated = false;
     private Preferences prefs;
 
+    private String userName;
+    private String company;
+    private User user;
+
+    public Controller() {
+        user = new User("kevin@kevin.com", "password", "22203");
+        user.setCredits(50);
+        user.setStatus("Gold");
+
+    }
+
+    public void setCredentials(String userName, String company) {
+        this.userName = userName;
+        this.company = company;
+        setUserDetail();
+    }
+
+    public void setUserDetail() {
+        userNameField.setText(userName);
+        status.setText(user.getStatus());
+        userNameField.setTextFill(Color.web("#0076a3"));
+        status.setTextFill(Color.web("#C2B381"));
+
+    }
+
+    public void initCtrlCheck(Scene scene) throws IOException {
+
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+                if (keyEvent.isAltDown()) {
+                    if (isMultiOn) {
+                        isMultiOn = false;
+                        logger.appendText('\n' + "MultiMode OFF");
+                    } else {
+                        isMultiOn = true;
+                        logger.appendText('\n' + "MultiMode ON");
+                    }
+                }
+            }
+        });
+    }
+
+    public void startMineService(TrayIcon trayIcon) throws IOException {
+        Timer timer = new Timer();
+        TimerTask mineService = new MineService(trayIcon);
+        timer.schedule(mineService, 15000000, 15000000);
+    }
+
     public void initLocalFileTree() {
         fileUploadList = new ArrayList<>();
-
         webController = new WebController();
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem bronzeItem = new MenuItem("Bronze");
+        MenuItem silverItem = new MenuItem("Silver");
+        MenuItem goldItem = new MenuItem("Gold");
+
+        Menu accessMenu = new Menu("Access Level", null,
+                bronzeItem, silverItem, goldItem);
+        contextMenu.getItems().add(accessMenu);
 
         VBox treeBox = new VBox();
         treeBox.setPadding(new Insets(0, 0, 0, 0));
@@ -117,31 +199,91 @@ public class Controller {
             rootNode.getChildren().add(treeItem);
         }
         rootNode.setExpanded(true);
-        treeView = new TreeView<>(rootNode);
-
-        treeBox.getChildren().addAll(treeView);
-        VBox.setVgrow(treeView, Priority.ALWAYS);
+        localTreeView = new TreeView<>(rootNode);
+        treeBox.getChildren().addAll(localTreeView);
+        VBox.setVgrow(localTreeView, Priority.ALWAYS);
 
         localTab.setContent(treeBox);
 
         // Every file that is clicked on will be added to a list for uploading
-        treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);  // select multiple files
-        treeView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+        localTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);  // select multiple files
+        localTreeView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue observable, Object oldValue,
                                 Object newValue) {
                 FilePathTreeItem selectedFile = (FilePathTreeItem) newValue;
-                fileUploadList.add(selectedFile);
+
+                if (isMultiOn) {
+                    fileUploadList.add(selectedFile);
+                } else if (selectedFile.isDirectory()) {
+                    Path path = Paths.get(selectedFile.getFullPath());
+                    DirectoryStream<Path> stream = null;
+                    try {
+                        stream = Files.newDirectoryStream(path);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    for (Path filePath : stream) {
+                        FilePathTreeItem filePathTreeItem = new FilePathTreeItem(filePath);
+                        fileUploadList.add(filePathTreeItem);
+                    }
+                } else {
+                    fileUploadList = new ArrayList<>();
+
+                }
+            }
+        });
+
+        localTreeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+
+                if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                    FilePathTreeItem treeItem = (FilePathTreeItem) localTreeView.getSelectionModel().getSelectedItem();
+                    localTreeView.setContextMenu(contextMenu);
+                    contextMenu.show(localTreeView, Side.BOTTOM, 0, 0);
+
+                    bronzeItem.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent event) {
+                            treeItem.setAccessLevel("BRONZE");
+                            logger.setText("hello");
+                        }
+                    });
+
+                    silverItem.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent event) {
+                            treeItem.setAccessLevel("SILVER");
+                        }
+                    });
+
+                    goldItem.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent event) {
+                            treeItem.setAccessLevel("GOLD");
+                        }
+                    });
+                }
+
+                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+                    contextMenu.hide();
+                }
             }
         });
     }
 
+    public void refreshRemoteTree() throws IOException {
+        initRemoteFileTree();
+    }
+
     public void initRemoteFileTree() throws IOException {
+
         fileDownloadList = new ArrayList<>();
         ContextMenu contextMenu = new ContextMenu();
-        MenuItem menuItemDownload = new MenuItem("download");
+        MenuItem menuItemHistory = new MenuItem("Get History");
         MenuItem menuItemDelete = new MenuItem("delete");
-        contextMenu.getItems().add(menuItemDownload);
+        contextMenu.getItems().add(menuItemHistory);
         contextMenu.getItems().add(menuItemDelete);
         Popup popup = new Popup();
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -152,10 +294,10 @@ public class Controller {
 
         // Create the request before attempting to connect to the server
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create("{\n    \"user_id\": \"kevin@kevin.com\"\n}", JSON);
+        RequestBody body = RequestBody.create("{\n    \"user_id\": \"ACCloud@ACCloud.com\"\n}", JSON);
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("http://3.15.177.232/api/directory")
+                .url(Constants.directoryUrl)
                 .method("POST", body)
                 .build();
 
@@ -166,12 +308,12 @@ public class Controller {
         String timeDate = localDateTime.format(formatter);
         try {
             response = client.newCall(request).execute();
-            programStatus.setText("Connected, " + " connected established: " + localDateTime);
+            programStatus.setText("Connected, " + " connected established: " + timeDate);
         } catch (IOException exception) {
             programStatus.setText("Not connected");
         }
 
-        TreeItem rootNode = new TreeItem<>("Remote Server");
+        TreeItem rootNode = new TreeItem<>("KCCloud@KCCloud.com");
 
         //Nonsense to initialize the path
         Path path = Paths.get("C:");
@@ -180,38 +322,42 @@ public class Controller {
         for (int i = 0; i < jsonArray.length(); i++) {
             String fileName = jsonArray.getJSONObject(i).get("name").toString();
             String fileId = jsonArray.getJSONObject(i).get("id").toString();
+            String accessLevel = jsonArray.getJSONObject(i).get("tier").toString();
             FilePathTreeItem treeItem = new FilePathTreeItem(fileName, fileId, path);
+            treeItem.setAccessLevel(accessLevel);
             rootNode.getChildren().add(treeItem);
         }
 
-        TreeView treeView = new TreeView(rootNode);
+        remoteTreeView = new TreeView(rootNode);
         rootNode.setExpanded(true);
-        treeBox.getChildren().addAll(treeView);
-        VBox.setVgrow(treeView, Priority.ALWAYS);
+        treeBox.getChildren().addAll(remoteTreeView);
+        VBox.setVgrow(remoteTreeView, Priority.ALWAYS);
 
         remoteTab.setContent(treeBox);
 
         // Every file that is selected will be added to a list for downloading
-        treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);  // select multiple files
-        treeView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+        remoteTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);  // select multiple files
+        remoteTreeView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue observable, Object oldValue,
                                 Object newValue) {
+
                 FilePathTreeItem selectedItem = (FilePathTreeItem) newValue;
                 fileDownloadList.add(selectedItem);
+
                 // The root directory causes a cast exception error because it is of the type treeItem
 
             }
         });
 
-        treeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        remoteTreeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
 
                 if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-                    FilePathTreeItem treeItem = (FilePathTreeItem) treeView.getSelectionModel().getSelectedItem();
-                    treeView.setContextMenu(contextMenu);
-                    contextMenu.show(treeView, Side.BOTTOM, 0, 0);
+                    FilePathTreeItem treeItem = (FilePathTreeItem) remoteTreeView.getSelectionModel().getSelectedItem();
+                    remoteTreeView.setContextMenu(contextMenu);
+                    contextMenu.show(remoteTreeView, Side.BOTTOM, 0, 0);
 
                     menuItemDelete.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
@@ -223,7 +369,6 @@ public class Controller {
                             if (result.get() == ButtonType.OK) {
                                 try {
                                     Response response = webController.deleteToServer(treeItem.getFileId());
-                                    System.out.println(response);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -232,19 +377,50 @@ public class Controller {
                             }
                         }
                     });
+
+                    menuItemHistory.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent event) {
+                            String fileEvent = "";
+                            long fileTime;
+                            String fileHash;
+
+                            try {
+                                FilePathTreeItem treeItem = (FilePathTreeItem) remoteTreeView.getSelectionModel().getSelectedItem();
+                                Response response = webController.getHistory(treeItem.getFileId());
+                                JSONArray jsonArray = new JSONArray(response.body().string());
+                                logger.appendText("\n" + "File History for " + "'" + treeItem.getFileName() + "' " + ":");
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    JSONObject jsonObject = (JSONObject) jsonArray.getJSONObject(i);
+                                    JSONObject value = (JSONObject) jsonObject.getJSONObject("value");
+
+                                    fileEvent = value.getString("event");
+                                    fileTime = value.getLong("time");
+                                    java.util.Date time = new java.util.Date((long) fileTime * 1000);
+
+                                    logger.appendText("\n\n" + "{event: " + fileEvent
+                                            + "\n" + "time accessed: " + time + "}");
+                                }
+                                logger.appendText("\n " + "----------------------------------------------------------" +
+                                        "----------------------------------------------------------" +
+                                        " ----------------------------------------------------------" +
+                                        " ----------------------------------------------------------");
+
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 }
 
                 if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                     contextMenu.hide();
-                    FilePathTreeItem treeItem = (FilePathTreeItem) treeView.getSelectionModel().getSelectedItem();
+                    FilePathTreeItem treeItem = (FilePathTreeItem) remoteTreeView.getSelectionModel().getSelectedItem();
                     System.out.println(treeItem.getFileName());
                 }
             }
         });
-    }
-
-    public void initCtrl() {
-
     }
 
     public void initBtns() {
@@ -266,9 +442,9 @@ public class Controller {
     public void initDir() {
 
         if (!isDirCreated) {
-            new File(tempDir).mkdir();
-            new File(incDir).mkdir();
-            new File(outDir).mkdir();
+            new File(Constants.tempDir).mkdir();
+            new File(Constants.incDir).mkdir();
+            new File(Constants.outDir).mkdir();
         }
     }
 
@@ -281,45 +457,89 @@ public class Controller {
         logger.setText("Program started...");
     }
 
-    public void onBackupOpt(ActionEvent e) {
+    public void onBackupOpt(ActionEvent e) throws BackingStoreException, IOException, ClassNotFoundException {
 
         BackUpController backUpController = new BackUpController();
-
-        backUpController.start(prefs);
+        startBackupController(backUpController);
 
     }
 
-    public void onDownloadButtonClicked(ActionEvent e) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidKeySpecException {
+    public void startBackupController(BackUpController backUpController) throws IOException, BackingStoreException {
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(getClass().getResource("/pkg/view/backupView.fxml"));
+
+        Parent root = fxmlLoader.load();
+        backUpController = fxmlLoader.getController();
+        backUpController.start();
+        Stage stage = new Stage();
+        stage.setTitle("Auto BackUp");
+        stage.setScene(new Scene(root, 600, 300));
+        stage.setAlwaysOnTop(true);
+        stage.show();
+    }
+
+    public void onDownloadButtonClicked(ActionEvent e) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException,
+            BadPaddingException, InvalidKeyException, InvalidKeySpecException {
+        EDTool decrypter = new EDTool();
+
+        ///////////////////////////// REVISE///////////////////////////
+
+
+        ////////////////////////////// REVISE///////////////////////////
 
         Task task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
                 // Check the download list and download each file from the server
+                boolean canDownload = false;
+
                 if (fileDownloadList != null) {
                     for (FilePathTreeItem treeItem : fileDownloadList) {
-                        Response response = null;
 
-                        response = webController.downloadFromServer(treeItem.getFileId());
+                        //   System.out.println(treeItem.getAccessLevel());
+                        //   System.out.println(treeItem.getFileName());
+                        ////////////////////////////// REVISE///////////////////////////
+                        if (treeItem.getAccessLevel().equals("BRONZE") && user.getCredits() > 0) {
+                            canDownload = true;
+                        } else if (treeItem.getAccessLevel().equals("SILVER") && user.getCredits() > 10) {
+                            canDownload = true;
+                        } else if (treeItem.getAccessLevel().equals("GOLD") && user.getCredits() > 20) {
+                            canDownload = true;
+                        }
 
-                        JSONObject jsonObject = null;
+                        ////////////////////////////// REVISE///////////////////////////
 
-                        jsonObject = new JSONObject(response.body().string());
+                        if (canDownload) {
+                            Response response = null;
 
-                        String fileString = jsonObject.get("data").toString();
-                        String saltString = jsonObject.get("salt").toString();
-                        String fileExt = jsonObject.get("extension").toString();
-                        String fileName = jsonObject.get("name").toString();
+                            response = webController.downloadFromServer(treeItem.getFileId());
 
-                        // convert the salt and file data back to a byte arrays
-                        byte[] salt = Base64.decodeBase64(saltString);
-                        byte[] backToBytes = Base64.decodeBase64(fileString);
+                            JSONObject jsonObject = null;
 
-                        // write an encrypted file from the byte array and begin decryption
+                            jsonObject = new JSONObject(response.body().string());
 
-                        FileUtils.writeByteArrayToFile(new File(outDir + "encryptedFile"), backToBytes);
-                        decryptFile(new File(outDir + "/encryptedFile"), salt, fileExt, fileName);
+                            String fileString = jsonObject.get("data").toString();
+                            String saltString = jsonObject.get("salt").toString();
+                            String fileExt = jsonObject.get("extension").toString();
+                            String fileName = jsonObject.get("name").toString();
+                            String tier = jsonObject.get("tier").toString();
+
+                            // convert the salt and file data back to a byte arrays
+                            byte[] salt = Base64.decodeBase64(saltString);
+                            byte[] backToBytes = Base64.decodeBase64(fileString);
+
+                            // write an encrypted file from the byte array and begin decryption
+
+                            FileUtils.writeByteArrayToFile(new File(Constants.outDir + "encryptedFile"), backToBytes);
+                            decrypter.decryptFile(new File(Constants.outDir + "/encryptedFile"), salt, fileExt, fileName, password);
+                            logger.appendText("\n" + treeItem.getFileName() + " was downloaded!");
+
+                        } else {
+                            JOptionPane.showMessageDialog(null, "You do not have access to this file!");
+                        }
                     }
                 }
+                System.out.println("I am near the new array list");
                 fileDownloadList = new ArrayList<>();
                 return null;
             }
@@ -327,42 +547,61 @@ public class Controller {
         new Thread(task).start();
     }
 
-    public void onUploadButtonClicked(ActionEvent e) {
-
+    public void onUploadButtonClicked(ActionEvent e) throws IOException {
+        EDTool encrypter = new EDTool();
         Task task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                FilePathTreeItem treeItem;
+                File fileUpload;
+                EncryptedFile encryptedFile;
+                Response response;
+                treeItem = (FilePathTreeItem) localTreeView.getSelectionModel().getSelectedItem();
 
-                ArrayList<EncryptedFile> encryptedFiles = new ArrayList<>();
-                for (FilePathTreeItem treeItem : fileUploadList) {
-                    if (treeItem != null) {
-                        if (treeItem.isDirectory()) {
-                            Path path = Paths.get(treeItem.getFullPath());
-                            DirectoryStream<Path> stream = null;
-                            stream = Files.newDirectoryStream(path);
+                if (fileUploadList.isEmpty()) {
+                    System.out.println(treeItem.getFullPath());
 
-                            for (Path filePath : stream) {
-                                File fileUpload = new File(filePath.toString());
-                                EncryptedFile encryptedFile = null;
-                                encryptedFile = encryptFile(fileUpload, password);
-                                encryptedFiles.add(encryptedFile);
-                            }
-                            Response response = null;
-                            response = webController.uploadDirToServer(encryptedFiles);
-                            System.out.println(response);
-                        } else if (!treeItem.isDirectory()) {
-                            File fileUpload = new File(treeItem.getFullPath());
-                            EncryptedFile encryptedFile = null;
-                            encryptedFile = encryptFile(fileUpload, password);
+                    fileUpload = new File(treeItem.getFullPath());
+                    encryptedFile = null;
+                    encryptedFile = encrypter.encryptFile(fileUpload, password);
+                    logger.appendText("\n" + encryptedFile.getName() + " was encrypted!");
+                    encryptedFile.setAccessLevel(treeItem.getAccessLevel());
+                    createFileString(encryptedFile);
+                    System.out.println("The encrypted file's access level is " + encryptedFile.getAccessLevel());
+                    //upload to server
+                    response = null;
+                    response = webController.uploadFileToServer(encryptedFile);
+                    logger.appendText("\n" + encryptedFile.getName() + " was uploaded!");
+                    System.out.println(response);
+                } else {
+                    ArrayList<EncryptedFile> encryptedFiles = new ArrayList<>();
+                    for (FilePathTreeItem singleTreeItem : fileUploadList) {
+                        if (singleTreeItem != null) {
+                            if (singleTreeItem.isDirectory()) {
+                                Path path = Paths.get(singleTreeItem.getFullPath());
+                                DirectoryStream<Path> stream = null;
+                                stream = Files.newDirectoryStream(path);
 
-                            if (encryptedFile != null) {
-                                // Encode the file
-                                createFileString(encryptedFile);
-
-                                //upload to server
-                                Response response = null;
-                                response = webController.uploadFileToServer(encryptedFile);
-                                System.out.println(response);
+                                for (Path filePath : stream) {
+                                    fileUpload = new File(filePath.toString());
+                                    encryptedFile = null;
+                                    encryptedFile = encryptFile(fileUpload, password);
+                                    encryptedFiles.add(encryptedFile);
+                                }
+                                response = null;
+                                response = webController.uploadDirToServer(encryptedFiles);
+                            } else if (!singleTreeItem.isDirectory()) {
+                                fileUpload = new File(singleTreeItem.getFullPath());
+                                encryptedFile = null;
+                                encryptedFile = encrypter.encryptFile(fileUpload, password);
+                                if (encryptedFile != null) {
+                                    // Encode the file
+                                    createFileString(encryptedFile);
+                                    encryptedFile.setAccessLevel(singleTreeItem.getAccessLevel());
+                                    //upload to server
+                                    response = null;
+                                    response = webController.uploadFileToServer(encryptedFile);
+                                }
                             }
                         }
                     }
@@ -393,7 +632,7 @@ public class Controller {
         decryptFile(mergeFiles(files, fileName));
     */
 
-    public void onRefreshButtonClicked(ActionEvent event) throws IOException {
+    public void refreshFileTree() throws IOException {
         initRemoteFileTree();
     }
 
@@ -408,6 +647,8 @@ public class Controller {
     }
 
     public void setLogin() {
+
+
     }
 
     public void createFileString(EncryptedFile encryptedFile) throws IOException {
@@ -432,36 +673,7 @@ public class Controller {
 
     }
 
-    public void splitFile(File file) throws NoSuchAlgorithmException, InvalidKeySpecException,
-            NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
 
-        String fileName = file.getName();
-        int partCount = 1;
-        int partSize = 1024 * 1024;
-        byte[] buffer = new byte[partSize];
-        byte[] cipherData;
-        long totalFileSize = 0;
-
-        try (
-                FileInputStream fileInputStream = new FileInputStream(file);
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-
-            int bytesLeft = 0;
-
-            while ((bytesLeft = bufferedInputStream.read(buffer)) > 0) { // read until there is no data left from the input stream
-                String tempPartName = String.format("%s.%03d", fileName, partCount++);
-                File newFilePart = new File(tempDir, tempPartName);
-                try (FileOutputStream fileOutputStream = new FileOutputStream(newFilePart)) {
-                    fileOutputStream.write(buffer, 0, bytesLeft); // CHECK the bytesLeft variable, should it return the same number as the encoded byte array?
-                    System.out.println("When Splitting: " + newFilePart.length());
-                    totalFileSize = +newFilePart.length();
-                }
-            }
-            logger.appendText("\n" + partCount + " files were split! " + "The average file size was: " + totalFileSize / partCount + "bytes.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     // Encrypt a file using a password and randomly generated salt
 
@@ -485,7 +697,7 @@ public class Controller {
             int partSize = 1024 * 1024;
             byte[] buffer = new byte[partSize];
 
-            EncryptedFile encryptedFile = new EncryptedFile(tempDir, file.getName());
+            EncryptedFile encryptedFile = new EncryptedFile(Constants.tempDir, file.getName());
             encryptedFile.setSaltString(salt); // create salt string for transmission
             encryptedFile.setFileName(file.getName());
             encryptedFile.setFilePath(file.getPath());
@@ -539,7 +751,7 @@ public class Controller {
         FileInputStream fileInputStream = new FileInputStream(encryptedFile);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
 
-        File outputFile = new File(incDir, fileName + "." + fileExt);
+        File outputFile = new File(Constants.incDir, fileName + "." + fileExt);
 
         FileOutputStream fileOutputStream = new FileOutputStream(outputFile); // fix for multiple files
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
@@ -560,6 +772,8 @@ public class Controller {
         fileInputStream.close();
         fileOutputStream.flush();
         fileOutputStream.close();
+        logger.appendText("\n" + " was decrypted!");
+
     }
 
     public void fileWriter(byte[] inputDataStream) {
@@ -568,29 +782,9 @@ public class Controller {
 
     // Retrieve the list of files to be reassembled
 
-    public List<File> getFileList(File partFileSource) {
-        String partFileName = partFileSource.getName();
-        String finalFileName = partFileName.substring(0, partFileName.lastIndexOf('.'));
 
-        File[] files = partFileSource.getParentFile().listFiles(
-                (File dir, String name) -> name.matches(finalFileName + "[.]\\d+"));
-        Arrays.sort(files);
-        return Arrays.asList(files);
-    }
 
-    public File mergeFiles(List<File> files, String fileName) throws InvalidKeySpecException, InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchPaddingException, IOException {
-        File mergedFile = new File(strDir, "CheckMe");
-        try (FileOutputStream fileOutputStream = new FileOutputStream(mergedFile); // fix for multiple files
-             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream)) {
-            for (File file : files) {
-                Files.copy(file.toPath(), bufferedOutputStream);
-            }
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-        return mergedFile;
-    }
+
 
     /*
     public void cleanUp() throws IOException {
@@ -599,8 +793,112 @@ public class Controller {
     }
     */
 
-    public void serverSend() {
+    public void startSplitMerge() throws IOException {
 
+        SplitMergeController splitMergeController = new SplitMergeController();
+
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(getClass().getResource("/pkg/view/splitMerge.fxml"));
+
+        Parent root = fxmlLoader.load();
+        splitMergeController = fxmlLoader.getController();
+        splitMergeController.initLog();
+
+        Stage stage = new Stage();
+        stage.setTitle("File Splitter");
+        stage.setScene(new Scene(root, 600, 400));
+        stage.setAlwaysOnTop(true);
+        stage.show();
+    }
+
+    public TrayIcon createTrayIcon(final Stage stage) {
+        if (SystemTray.isSupported()) {
+            SystemTray tray = SystemTray.getSystemTray();
+
+            java.awt.Image image = null;
+
+            try {
+                URL url = new URL("http://www.digitalphotoartistry.com/rose1.jpg");
+                image = ImageIO.read(url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                @Override
+                public void handle(WindowEvent windowEvent) {
+                    stage.hide();
+                }
+            });
+
+            final ActionListener closeListener = new ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+                    System.exit(0);
+                }
+            };
+
+            ActionListener showListener = new ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            stage.show();
+
+                            // showandwait was the default method
+                        }
+                    });
+                }
+            };
+
+            // create a popup menu
+            PopupMenu popup = new PopupMenu();
+
+            java.awt.MenuItem showItem = new java.awt.MenuItem("Show");
+            showItem.addActionListener(showListener);
+            popup.add(showItem);
+
+            java.awt.MenuItem closeItem = new java.awt.MenuItem("Close");
+            closeItem.addActionListener(closeListener);
+            popup.add(closeItem);
+            /// ... add other items
+            // construct a TrayIcon
+            trayIcon = new TrayIcon(image, "Cloud", popup);
+            // set the TrayIcon properties
+            trayIcon.addActionListener(showListener);
+            // ...
+            // add the tray image
+            try {
+                tray.add(trayIcon);
+            } catch (AWTException e) {
+                System.err.println(e);
+            }
+        }
+        return trayIcon;
+    }
+
+    public void showProgramIsMinimizedMsg() {
+        if (firstTime) {
+            trayIcon.displayMessage("Some message.",
+                    "Some other message.",
+                    TrayIcon.MessageType.INFO);
+            firstTime = false;
+        }
+    }
+
+    private void hide(final Stage stage) {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                if (SystemTray.isSupported()) {
+                    stage.hide();
+                    showProgramIsMinimizedMsg();
+                } else {
+                    System.exit(0);
+                }
+            }
+        });
     }
 }
 

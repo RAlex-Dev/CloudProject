@@ -18,6 +18,13 @@
         <Insets top="20" left="10" right="10" bottom="10"></Insets>
     </padding>
 
+    <Label text="Company name: ">
+        <font>
+            <Font name="Arial"/>
+        </font>
+    </Label>
+
+    <TextField fx:id="companyInput"/>
     <Label text="Username">
         <font>
             <Font name="Arial"/>

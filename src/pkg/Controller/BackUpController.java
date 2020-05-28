@@ -1,145 +1,127 @@
 package pkg.Controller;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import com.google.gson.GsonBuilder;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-import org.w3c.dom.CDATASection;
-import pkg.model.DateTime;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import pkg.model.ScheduleItem;
 
 import javax.swing.*;
-import java.io.IOException;
-import java.time.LocalDate;
+import javax.swing.filechooser.FileSystemView;
+import java.awt.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-public class BackUpController {
+public class BackUpController extends Frame {
 
     @FXML
     public Button okBtn;
     @FXML
     TableView backupTable;
     @FXML
-    TableColumn dateTimeCol;
-    @FXML
     TableColumn dirCol;
-    TableRow<DateTime> row;
-    DateTime dateTime;
+    TableRow<Path> row;
+    Path schedulePath;
     @FXML
-    private ComboBox hoursBox;
+    Button addRow;
     @FXML
-    private ComboBox minutesBox;
+    TextField filePathField;
     @FXML
-    private ComboBox timeOfDayBox;
+    private Button selectFolderBtn;
     @FXML
-    private Button browseBtn;
-    @FXML
-    private DatePicker datePicker;
-    private ObservableList<DateTime> dateTimeList =
-            FXCollections.observableArrayList();
+    private ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
+    private Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
 
-    public void start(Preferences prefs) {
+    public void start() throws BackingStoreException {
+        prefs = Preferences.userRoot().node(this.getClass().getName());
+        dirCol.setCellValueFactory(new PropertyValueFactory<>("path"));
 
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(getClass().getResource("/pkg/view/backupView.fxml"));
+        scheduleItems = deSerialize();
 
-            Scene scene = new Scene(fxmlLoader.load(), 600, 700);
-            Stage stage = new Stage();
-            stage.setTitle("Auto BackUp");
-            stage.setScene(scene);
-            stage.show();
-
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void onAddClick(ActionEvent e) {
-
-        dateTimeCol.setCellValueFactory(new PropertyValueFactory<DateTime, String>("dayTimeFormat"));
-        //    dirCol.setCellValueFactory(new PropertyValueFactory<DateTime, String>("directory"));
-
-        dateTime = getDateTime();
-        dateTimeList.add(dateTime);
-        dateTime.setDayTimeFormat();
-        backupTable.getItems().add(dateTime);
-        initTableView();
-
-
-        System.out.println(dateTime.getHour() + " " + dateTime.getMin() + " " + dateTime.getTimeOfDay());
-    }
-
-    public void onRemoveClick(ActionEvent e) {
-        DateTime selectedItem = (DateTime) backupTable.getSelectionModel().getSelectedItem();
-        backupTable.getItems().remove(selectedItem);
-    }
-
-    public void onBrowseButtonClicked(ActionEvent e) {
-        String osName = System.getProperty("os.name");
-        String homeDir = System.getProperty("user.home");
-
-        System.out.print(osName + " " + homeDir);
-        JFileChooser fc = new JFileChooser(homeDir);
-
-        // The user should click the browse button which will open a dialog to the file system
-        if (e.getSource().equals(browseBtn)) {
-            int returnVal = fc.showOpenDialog(null);
-
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                //   fileName = file.getName();
-                //   System.out.println(" The file path is " + file.getAbsolutePath());
-                //   encFile = encryptFile(file, password);
-                /*
-
-                 */
-                //  splitFile(encFile);
-            } else {
-                System.out.println("The dialog was cancelled by the user");
+        if (!scheduleItems.isEmpty()) {
+            for (ScheduleItem scheduleItem : scheduleItems) {
+                backupTable.getItems().add(scheduleItem);
             }
         }
     }
 
-
-    public DateTime getDateTime() {
-
-        // Getting the time from the user input
-
-        int hours = Integer.parseInt((hoursBox.getValue().toString()));
-        int minutes = Integer.parseInt((minutesBox.getValue().toString()));
-        String timeOfDay = timeOfDayBox.getValue().toString();
-
-        // Getting the date from the user input
-
-        LocalDate localDate;
-        localDate = datePicker.getValue();
-
-        return new DateTime(hours, minutes, timeOfDay, localDate);
+    public void onAddClick(ActionEvent e) {
+        addDir();
     }
 
-    public void initTableView() {
-        backupTable.setRowFactory(tableView -> {
-            row = new TableRow<>();
-            row.setOnMouseClicked(mouseEvent -> {
-                if (!row.isEmpty()) {
-                    DateTime dateTime = row.getItem();
-                    System.out.println(dateTime.getHour() + " " + dateTime.getLocalDate());
-                }
-            });
-            return row;
-        });
+    public void addDir() {
+        ScheduleItem scheduleItem = new ScheduleItem(filePathField.getText());
+        scheduleItems.add(scheduleItem);
+        backupTable.getItems().add(scheduleItem);
     }
 
+
+    public void onRemoveClick(ActionEvent e) {
+        ScheduleItem selectedItem = (ScheduleItem) backupTable.getSelectionModel().getSelectedItem();
+        backupTable.getItems().remove(selectedItem);
+    }
+
+    public void serialize(ArrayList<ScheduleItem> scheduleItems) {
+        GsonBuilder gson = new GsonBuilder();
+        String serializedItems = gson.create().toJson(scheduleItems);
+
+        System.out.println("Serialized items: " + serializedItems);
+        prefs.put("scheduleList", serializedItems);
+    }
+
+    public ArrayList<ScheduleItem> deSerialize() {
+        //   java.lang.reflect.Type arrayType = new TypeToken<ArrayList<ScheduleItem>>() {}.getType();
+
+        String serializedItems;
+
+        System.out.println("stored in prefs: " + prefs.get("scheduleList", ""));
+        if (!prefs.get("scheduleList", "").equals("")) {  // something in the array
+            serializedItems = prefs.get("scheduleList", "");
+        } else {                                                // nothing in the array
+            System.out.println("empty");
+            return new ArrayList<ScheduleItem>();
+        }
+
+        JSONArray jsonArray = new JSONArray(serializedItems);
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            String jsonString = jsonObject.toString();
+            ScheduleItem scheduleItem = new ScheduleItem(jsonString);
+            scheduleItems.add(scheduleItem);
+        }
+        return scheduleItems;
+    }
+
+    // Method invocation for browsing for a file or directory
+    public void onBrowseButtonClicked(ActionEvent e) {
+        JFrame frame = new JFrame();
+        frame.setAlwaysOnTop(true);
+
+        JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+        fileChooser.setAcceptAllFileFilterUsed(false);
+
+        if (e.getSource().equals(selectFolderBtn)) {
+            fileChooser.setDialogTitle("Choose a directory");
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int returnValue = fileChooser.showOpenDialog(frame);
+
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                String dirPath = fileChooser.getSelectedFile().getPath();
+                filePathField.setText(dirPath);
+            }
+        }
+    }
 
     public void exit() {
+        serialize(scheduleItems);
         Stage stage = (Stage) okBtn.getScene().getWindow();
         stage.close();
     }

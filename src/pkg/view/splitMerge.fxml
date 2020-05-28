@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="Infinity" maxWidth="Infinity" minHeight="-Infinity"
+            minWidth="-Infinity"
+            xmlns="http://javafx.com/javafx/10.0.2-internal" fx:controller="pkg.Controller.SplitMergeController">
+
+    <TextField fx:id="filePathField" layoutX="34.0" layoutY="66.0" prefHeight="25.0" prefWidth="421.0"/>
+    <TextField fx:id="filePathField2" layoutX="34.0" layoutY="106.0" prefHeight="25.0" prefWidth="421.0"/>
+
+    <Button fx:id="selectFileSplit" layoutX="455.0" layoutY="66.0" onAction="#onBrowseButtonClicked" prefHeight="25.0"
+            prefWidth="25.0" text="..."/>
+    <Button fx:id="selectFileMerge" layoutX="455.0" layoutY="106.0" onAction="#onBrowseButtonClicked" prefHeight="25.0"
+            prefWidth="25.0" text="..."/>
+
+    <Button fx:id="splitBtn" layoutX="495.0" layoutY="66.0" onAction="#onSplitFile" prefHeight="25.0" prefWidth="70.0"
+            text="Split"/>
+    <Button fx:id="mergeBtn" layoutX="495.0" layoutY="106.0" onAction="#onMergeFile" prefHeight="25.0" prefWidth="70.0"
+            text="Merge"/>
+
+    <ScrollPane layoutX="60" layoutY="140" fx:id="logPane">
+    </ScrollPane>
+</AnchorPane>
