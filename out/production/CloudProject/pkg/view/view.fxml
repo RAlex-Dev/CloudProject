@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.text.Text?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.2-internal"
             fx:controller="pkg.Controller.Controller">
     <top>
@@ -27,21 +23,22 @@
     <left>
         <AnchorPane>
             <children>
-        <TabPane style="-fx-border-color: darkgray;" prefWidth="500" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.bottomAnchor="0.0">
-            <tabs>
-                <Tab fx:id="remoteTab" text="Cloud Explorer" closable="false">
-                    <graphic>
-                        <ImageView>
-                            <image>
-                                <Image  url="@remote.png"></Image>
-                            </image>
-                        </ImageView>
-                    </graphic>
-                    <TreeView>
-                    </TreeView>
-                </Tab>
-            </tabs>
-        </TabPane>
+                <TabPane style="-fx-border-color: darkgray;" prefWidth="500" AnchorPane.topAnchor="0.0"
+                         AnchorPane.rightAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.bottomAnchor="0.0">
+                    <tabs>
+                        <Tab fx:id="remoteTab" text="Cloud Explorer" closable="false">
+                            <graphic>
+                                <ImageView>
+                                    <image>
+                                        <Image url="@remote.png"></Image>
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <TreeView>
+                            </TreeView>
+                        </Tab>
+                    </tabs>
+                </TabPane>
                 <HBox AnchorPane.topAnchor="1.0" AnchorPane.rightAnchor="5.0">
                     <children>
                         <Button onAction="#refreshRemoteTree">
@@ -60,7 +57,7 @@
     </left>
 
     <right>
-        <AnchorPane style="-fx-border-color: darkgray;" >
+        <AnchorPane style="-fx-border-color: darkgray;">
             <ImageView layoutX="10">
                 <image>
                     <Image url="@user.png"></Image>
@@ -71,7 +68,8 @@
             <Label fx:id="userNameField" style="-fx-font-weight: bold" layoutX="9" layoutY="65"></Label>
             <Label fx:id="status" style="-fx-font-weight: bold" layoutX="16" layoutY="80"></Label>
 
-            <Button fx:id="downloadButton" onAction="#onDownloadButtonClicked" style="-fx-border-color: darkgray;" layoutY="200" >
+            <Button fx:id="downloadButton" onAction="#onDownloadButtonClicked" style="-fx-border-color: darkgray;"
+                    layoutY="200">
                 <graphic>
                     <ImageView>
                         <image>
@@ -80,7 +78,8 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="uploadBtn" onAction="#onUploadButtonClicked" style="-fx-border-color: darkgray;" layoutY="120" >
+            <Button fx:id="uploadBtn" onAction="#onUploadButtonClicked" style="-fx-border-color: darkgray;"
+                    layoutY="120">
                 <graphic>
                     <ImageView>
                         <image>
@@ -88,23 +87,26 @@
                         </image>
                     </ImageView>
                 </graphic>
-            </Button> <Button fx:id="fileToolBtn" onAction="#startSplitMerge" style="-fx-border-color: darkgray;" layoutY="280" >
-            <graphic>
-                <ImageView>
-                    <image>
-                        <Image url="@splitter.png"></Image>
-                    </image>
-                </ImageView>
-            </graphic>
-        </Button> <Button fx:id="fileEncrypterBtn" onAction="#onUploadButtonClicked" style="-fx-border-color: darkgray;" layoutY="360" >
-            <graphic>
-                <ImageView>
-                    <image>
-                        <Image url="@encrypt-decrypt.png"></Image>
-                    </image>
-                </ImageView>
-            </graphic>
-        </Button>
+            </Button>
+            <Button fx:id="fileToolBtn" onAction="#startSplitMerge" style="-fx-border-color: darkgray;" layoutY="280">
+                <graphic>
+                    <ImageView>
+                        <image>
+                            <Image url="@splitter.png"></Image>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button fx:id="fileEncrypterBtn" onAction="#onUploadButtonClicked" style="-fx-border-color: darkgray;"
+                    layoutY="360">
+                <graphic>
+                    <ImageView>
+                        <image>
+                            <Image url="@encrypt-decrypt.png"></Image>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
         </AnchorPane>
     </right>
 
@@ -115,7 +117,7 @@
                     <graphic>
                         <ImageView>
                             <image>
-                                <Image  url="@local.png"></Image>
+                                <Image url="@local.png"></Image>
                             </image>
                         </ImageView>
                     </graphic>

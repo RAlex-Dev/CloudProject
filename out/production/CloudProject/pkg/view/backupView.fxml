@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="Infinity" maxWidth="Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" xmlns="http://javafx.com/javafx/10.0.2-internal"
+            fx:controller="pkg.Controller.BackUpController">
 
-<AnchorPane maxHeight="Infinity" maxWidth="Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pkg.Controller.BackUpController">
-
-    <TextField fx:id="filePathField" layoutX="34.0" layoutY="66.0" prefHeight="25.0" prefWidth="421.0" />
-    <Button fx:id="selectFolderBtn" layoutX="455.0" layoutY="66.0" onAction="#onBrowseButtonClicked" prefHeight="25.0" prefWidth="25.0" text="Folder" />
-    <Button fx:id="okBtn" layoutX="495.0" layoutY="66.0" onAction="#exit" prefHeight="25.0" prefWidth="50.0" text="Ok" />
+    <TextField fx:id="filePathField" layoutX="34.0" layoutY="66.0" prefHeight="25.0" prefWidth="421.0"/>
+    <Button fx:id="selectFolderBtn" layoutX="455.0" layoutY="66.0" onAction="#onBrowseButtonClicked" prefHeight="25.0"
+            prefWidth="25.0" text="Folder"/>
+    <Button fx:id="okBtn" layoutX="495.0" layoutY="66.0" onAction="#exit" prefHeight="25.0" prefWidth="50.0" text="Ok"/>
 
     <TableView fx:id="backupTable" layoutX="33.0" layoutY="100" prefHeight="155.0" prefWidth="527.0">
         <columns>
-            <TableColumn fx:id="dirCol" text="Path" />
+            <TableColumn fx:id="dirCol" text="Path"/>
         </columns>
     </TableView>
-    <Button fx:id="addRow" layoutX="569.0" layoutY="138.0" onAction="#onAddClick" text="+" />
-    <Button fx:id="removeRow" layoutX="571.0" layoutY="178.0" onAction="#onRemoveClick" text="-" />
+    <Button fx:id="addRow" layoutX="569.0" layoutY="138.0" onAction="#onAddClick" text="+"/>
+    <Button fx:id="removeRow" layoutX="571.0" layoutY="178.0" onAction="#onRemoveClick" text="-"/>
 </AnchorPane>

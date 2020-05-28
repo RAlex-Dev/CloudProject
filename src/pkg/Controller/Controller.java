@@ -68,7 +68,6 @@ import java.util.prefs.Preferences;
 
 public class Controller {
 
-    private static String strDir = "\\\\Mac\\Home\\Desktop";
     boolean firstTime;
     @FXML
     private Tab localTab;
@@ -142,6 +141,7 @@ public class Controller {
 
     }
 
+
     public void initCtrlCheck(Scene scene) throws IOException {
 
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -160,29 +160,33 @@ public class Controller {
         });
     }
 
+    // start the mining service, the interval can be specified
+
     public void startMineService(TrayIcon trayIcon) throws IOException {
         Timer timer = new Timer();
         TimerTask mineService = new MineService(trayIcon);
         timer.schedule(mineService, 15000000, 15000000);
     }
 
+    // initialize the local file tree by building an object for each directory and file on the disk
     public void initLocalFileTree() {
         fileUploadList = new ArrayList<>();
         webController = new WebController();
+
+        // Initialize the right click menu for the user
         ContextMenu contextMenu = new ContextMenu();
         MenuItem bronzeItem = new MenuItem("Bronze");
         MenuItem silverItem = new MenuItem("Silver");
         MenuItem goldItem = new MenuItem("Gold");
-
         Menu accessMenu = new Menu("Access Level", null,
                 bronzeItem, silverItem, goldItem);
         contextMenu.getItems().add(accessMenu);
 
+        // The VBox is a parent layout for all elements of the tree
         VBox treeBox = new VBox();
         treeBox.setPadding(new Insets(0, 0, 0, 0));
         treeBox.setSpacing(100);
         String hostName = "computer";
-
         try {
             hostName = InetAddress.getLocalHost().getHostName();
             logger.appendText('\n' + "File tree built for the host " + hostName);
@@ -191,13 +195,16 @@ public class Controller {
             System.out.println(e.getMessage());
         }
 
+        // The root node is the hostname and it contains every drive on the computer
+        // Each drive has a treeItem representation, that includes external drives connected to the system
         rootNode = new TreeItem<>(hostName);
-
         Iterable<Path> rootDirectories = FileSystems.getDefault().getRootDirectories();
         for (Path name : rootDirectories) {
             FilePathTreeItem treeItem = new FilePathTreeItem(name);
             rootNode.getChildren().add(treeItem);
         }
+
+        // the directories are added to the layout
         rootNode.setExpanded(true);
         localTreeView = new TreeView<>(rootNode);
         treeBox.getChildren().addAll(localTreeView);
@@ -234,6 +241,7 @@ public class Controller {
             }
         });
 
+        // call back function for right buttons clicks for setting access level for each file
         localTreeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
@@ -273,13 +281,18 @@ public class Controller {
         });
     }
 
+    // operates for the refresh button in the UI
     public void refreshRemoteTree() throws IOException {
         initRemoteFileTree();
     }
 
+
+    // Initializes the file tree for the remote files on the server
     public void initRemoteFileTree() throws IOException {
 
         fileDownloadList = new ArrayList<>();
+
+        // Initialize the context menu for user interactions
         ContextMenu contextMenu = new ContextMenu();
         MenuItem menuItemHistory = new MenuItem("Get History");
         MenuItem menuItemDelete = new MenuItem("delete");
@@ -288,7 +301,8 @@ public class Controller {
         Popup popup = new Popup();
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Remote File Deletion");
-        // Create the vertical box for the tree
+
+        // The VBox is a parent layout for every element in the tree
         VBox treeBox = new VBox();
         treeBox.setPadding(new Insets(0, 0, 0, 0));
 
@@ -301,7 +315,7 @@ public class Controller {
                 .method("POST", body)
                 .build();
 
-        // Attempt connect
+        // Attempt connect and display time and date of connection
         Response response = null;
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -313,11 +327,14 @@ public class Controller {
             programStatus.setText("Not connected");
         }
 
+        // The root of the file tree, this is not an actual representation of anything like
+        // on the local file tree, but it is needed to build the tree
         TreeItem rootNode = new TreeItem<>("KCCloud@KCCloud.com");
 
         //Nonsense to initialize the path
         Path path = Paths.get("C:");
 
+        // parse Json response from server and build a tree item for every Json object
         JSONArray jsonArray = new JSONArray(response.body().string());
         for (int i = 0; i < jsonArray.length(); i++) {
             String fileName = jsonArray.getJSONObject(i).get("name").toString();
@@ -328,6 +345,7 @@ public class Controller {
             rootNode.getChildren().add(treeItem);
         }
 
+        // create the file tree itself
         remoteTreeView = new TreeView(rootNode);
         rootNode.setExpanded(true);
         treeBox.getChildren().addAll(remoteTreeView);
@@ -344,12 +362,11 @@ public class Controller {
 
                 FilePathTreeItem selectedItem = (FilePathTreeItem) newValue;
                 fileDownloadList.add(selectedItem);
-
                 // The root directory causes a cast exception error because it is of the type treeItem
-
             }
         });
 
+        // Call back function for right mouse clicks for remotely deleting files and getting the file history from the server
         remoteTreeView.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
@@ -414,6 +431,7 @@ public class Controller {
                     });
                 }
 
+                // allow the right click menu to go away when the user clicks out of it
                 if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                     contextMenu.hide();
                     FilePathTreeItem treeItem = (FilePathTreeItem) remoteTreeView.getSelectionModel().getSelectedItem();
@@ -423,24 +441,8 @@ public class Controller {
         });
     }
 
-    public void initBtns() {
-        loginBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                getLogin();
-            }
-        });
-
-        createBtn.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                setLogin();
-            }
-        });
-    }
-
+    // create directories for different program operations
     public void initDir() {
-
         if (!isDirCreated) {
             new File(Constants.tempDir).mkdir();
             new File(Constants.incDir).mkdir();
@@ -448,6 +450,7 @@ public class Controller {
         }
     }
 
+    // create the log
     public void initLog() {
         logger = new TextArea();
         logger.setWrapText(true);
@@ -457,6 +460,7 @@ public class Controller {
         logger.setText("Program started...");
     }
 
+    // Callback function for starting the backup function
     public void onBackupOpt(ActionEvent e) throws BackingStoreException, IOException, ClassNotFoundException {
 
         BackUpController backUpController = new BackUpController();
@@ -464,6 +468,7 @@ public class Controller {
 
     }
 
+    // creates layout for backup view
     public void startBackupController(BackUpController backUpController) throws IOException, BackingStoreException {
         FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(getClass().getResource("/pkg/view/backupView.fxml"));
@@ -478,14 +483,10 @@ public class Controller {
         stage.show();
     }
 
+    // Callback for downloading files from the server
     public void onDownloadButtonClicked(ActionEvent e) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException,
             BadPaddingException, InvalidKeyException, InvalidKeySpecException {
         EDTool decrypter = new EDTool();
-
-        ///////////////////////////// REVISE///////////////////////////
-
-
-        ////////////////////////////// REVISE///////////////////////////
 
         Task task = new Task<Void>() {
             @Override
@@ -495,10 +496,7 @@ public class Controller {
 
                 if (fileDownloadList != null) {
                     for (FilePathTreeItem treeItem : fileDownloadList) {
-
-                        //   System.out.println(treeItem.getAccessLevel());
-                        //   System.out.println(treeItem.getFileName());
-                        ////////////////////////////// REVISE///////////////////////////
+                        // Determine if the user can download the files selected
                         if (treeItem.getAccessLevel().equals("BRONZE") && user.getCredits() > 0) {
                             canDownload = true;
                         } else if (treeItem.getAccessLevel().equals("SILVER") && user.getCredits() > 10) {
@@ -507,17 +505,11 @@ public class Controller {
                             canDownload = true;
                         }
 
-                        ////////////////////////////// REVISE///////////////////////////
-
                         if (canDownload) {
                             Response response = null;
-
                             response = webController.downloadFromServer(treeItem.getFileId());
-
                             JSONObject jsonObject = null;
-
                             jsonObject = new JSONObject(response.body().string());
-
                             String fileString = jsonObject.get("data").toString();
                             String saltString = jsonObject.get("salt").toString();
                             String fileExt = jsonObject.get("extension").toString();
@@ -547,6 +539,7 @@ public class Controller {
         new Thread(task).start();
     }
 
+    // Callback function for uploading files to the server
     public void onUploadButtonClicked(ActionEvent e) throws IOException {
         EDTool encrypter = new EDTool();
         Task task = new Task<Void>() {
@@ -613,25 +606,6 @@ public class Controller {
         new Thread(task).start();
     }
 
-        /*
-        encFile = encryptFile(selectedFile, password);
-
-        if(encFile == null) {
-            logger.appendText('\n' + "No file was selected");
-        } else {
-            splitFile(encFile);
-        }
-
-        This is for decryption
-        File tempFile = new File(incDir + "\\EncryptFile.001");
-
-        // remove hardcoding later
-        String fileName = "EncryptFile";
-
-        List<File> files = getFileList(tempFile);
-        decryptFile(mergeFiles(files, fileName));
-    */
-
     public void refreshFileTree() throws IOException {
         initRemoteFileTree();
     }
@@ -646,11 +620,7 @@ public class Controller {
         User tempUser = new User(userName, userPass, userCode);
     }
 
-    public void setLogin() {
-
-
-    }
-
+    // encode the file to a string representation using base64 algorithm
     public void createFileString(EncryptedFile encryptedFile) throws IOException {
 
         FileInputStream fileInputStreamReader = new FileInputStream(encryptedFile);
@@ -673,10 +643,7 @@ public class Controller {
 
     }
 
-
-
     // Encrypt a file using a password and randomly generated salt
-
     public EncryptedFile encryptFile(File file, char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException,
             NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
 
@@ -701,7 +668,6 @@ public class Controller {
             encryptedFile.setSaltString(salt); // create salt string for transmission
             encryptedFile.setFileName(file.getName());
             encryptedFile.setFilePath(file.getPath());
-
 
             try (
                     FileOutputStream fileOutputStream = new FileOutputStream(encryptedFile);
@@ -733,6 +699,7 @@ public class Controller {
         }
     }
 
+    // Decrypt file using params from server
     public void decryptFile(File encryptedFile, byte[] salt, String fileExt, String fileName) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException,
             IOException, BadPaddingException, IllegalBlockSizeException {
         byte[] buffer = new byte[1024 * 1024];
@@ -776,16 +743,6 @@ public class Controller {
 
     }
 
-    public void fileWriter(byte[] inputDataStream) {
-
-    }
-
-    // Retrieve the list of files to be reassembled
-
-
-
-
-
     /*
     public void cleanUp() throws IOException {
         File splitFileDir = new File(tempDir);
@@ -793,6 +750,7 @@ public class Controller {
     }
     */
 
+    // create layout for the split and merge UI
     public void startSplitMerge() throws IOException {
 
         SplitMergeController splitMergeController = new SplitMergeController();
@@ -811,6 +769,7 @@ public class Controller {
         stage.show();
     }
 
+    // Generate a tray icon for Windows
     public TrayIcon createTrayIcon(final Stage stage) {
         if (SystemTray.isSupported()) {
             SystemTray tray = SystemTray.getSystemTray();
@@ -845,8 +804,6 @@ public class Controller {
                         @Override
                         public void run() {
                             stage.show();
-
-                            // showandwait was the default method
                         }
                     });
                 }
@@ -862,12 +819,10 @@ public class Controller {
             java.awt.MenuItem closeItem = new java.awt.MenuItem("Close");
             closeItem.addActionListener(closeListener);
             popup.add(closeItem);
-            /// ... add other items
             // construct a TrayIcon
             trayIcon = new TrayIcon(image, "Cloud", popup);
             // set the TrayIcon properties
             trayIcon.addActionListener(showListener);
-            // ...
             // add the tray image
             try {
                 tray.add(trayIcon);
@@ -878,6 +833,7 @@ public class Controller {
         return trayIcon;
     }
 
+    // Display
     public void showProgramIsMinimizedMsg() {
         if (firstTime) {
             trayIcon.displayMessage("Some message.",
