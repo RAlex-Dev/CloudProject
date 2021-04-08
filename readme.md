@@ -35,3 +35,21 @@ Encoding
 Decoding
 
 <img src="https://i.ibb.co/pXwcM2t/decoding.png" alt="decoding" border="0">
+
+Webcontroller
+
+<img src="https://i.ibb.co/VJBkR2q/webcontroller.png" alt="webcontroller" border="0">
+
+Blockchain
+
+<img src="https://i.ibb.co/NWKnpPt/blockchain.png" alt="blockchain" border="0" />
+
+Blocks
+
+<img src="https://i.ibb.co/44wVzgk/blocks.png" alt="blocks" border="0">
+
+Performance
+
+<img src="https://i.ibb.co/CQnt39K/performance-2.png" alt="performance-2" border="0">
+
+<img src="https://i.ibb.co/CQnt39K/performance-2.png" alt="performance-2" border="0">
