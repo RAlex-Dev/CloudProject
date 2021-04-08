@@ -57,4 +57,5 @@ Performance
 
 Demo
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/g4zP_nFASZA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Watch the video](https://i.ibb.co/J2zrrwS/Screen-Shot-2021-04-08-at-7-01-01-PM.png)](https://www.youtube.com/watch?v=g4zP_nFASZA)
+
